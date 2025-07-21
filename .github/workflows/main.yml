@@ -1,0 +1,29 @@
+name: Build 32-bit APK
+
+on:
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Build 32-bit APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease -PabiFilters=armeabi-v7a
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-32bit
+          path: android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk
