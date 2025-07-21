@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # 使用 Linux 环境
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -16,14 +16,16 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Build APK
+      - name: Grant Gradle permission
+        run: chmod +x ./android/gradlew  # 确保 gradlew 可执行
+
+      - name: Build 32-bit APK
         run: |
           cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease -PabiFilters=armeabi-v7a
+          ./gradlew assembleRelease -PabiFilters=armeabi-v7a  # 使用 Linux 路径
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4  # 使用 v4
+        uses: actions/upload-artifact@v4
         with:
           name: app-32bit
           path: android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk
