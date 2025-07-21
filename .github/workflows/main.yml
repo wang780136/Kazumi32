@@ -1,7 +1,7 @@
-name: Build 32-bit APK
+name: Build Flutter 32-bit APK
 
 on:
-  workflow_dispatch: # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -10,20 +10,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          java-version: '11'
-          distribution: 'temurin'
+          flutter-version: 'stable'
 
-      - name: Build 32-bit APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease -PabiFilters=armeabi-v7a
+      - name: Build APK
+        run: flutter build apk --release --target-platform android-arm
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
           name: app-32bit
-          path: android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
