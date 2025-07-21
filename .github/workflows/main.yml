@@ -16,13 +16,18 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2  # 自动配置 ANDROID_HOME
+
       - name: Generate gradlew
         run: |
           cd android
-          gradle wrapper --gradle-version 8.0  # 自动生成缺失文件
+          gradle wrapper --gradle-version 8.0
 
-      - name: Grant Gradle permission
-        run: chmod +x ./android/gradlew  # 现在文件已存在
+      - name: Create local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > ./android/local.properties
+        env:
+          ANDROID_HOME: ${{ secrets.ANDROID_HOME || '/usr/local/lib/android/sdk' }}
 
       - name: Build 32-bit APK
         run: |
