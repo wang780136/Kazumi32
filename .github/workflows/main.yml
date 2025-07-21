@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # 使用 Linux 环境
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,12 +17,12 @@ jobs:
           distribution: 'temurin'
 
       - name: Grant Gradle permission
-        run: chmod +x ./android/gradlew  # 确保 gradlew 可执行
+        run: chmod +x ./android/app/gradlew  # 注意 app 子目录
 
       - name: Build 32-bit APK
         run: |
           cd android
-          ./gradlew assembleRelease -PabiFilters=armeabi-v7a  # 使用 Linux 路径
+          ./gradlew assembleRelease -PabiFilters=armeabi-v7a
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
