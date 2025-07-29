@@ -1,22 +1,23 @@
-name: Flutter 32-bit Build25565
+name: Flutter 32-bit Build
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:  # 添加这个以允许手动触发
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.x' # 指定你的Flutter版本
+        flutter-version: '3.x'  # 使用你的实际Flutter版本
     
     - name: Install dependencies
       run: flutter pub get
@@ -25,7 +26,7 @@ jobs:
       run: flutter build apk --release --target-platform android-arm
     
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # 关键修改点
       with:
         name: app-32bit-release
         path: build/app/outputs/flutter-apk/app-release.apk
