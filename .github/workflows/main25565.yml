@@ -1,0 +1,31 @@
+name: Flutter 32-bit Build25565
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.x' # 指定你的Flutter版本
+    
+    - name: Install dependencies
+      run: flutter pub get
+    
+    - name: Build 32-bit APK
+      run: flutter build apk --release --target-platform android-arm
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-32bit-release
+        path: build/app/outputs/flutter-apk/app-release.apk
