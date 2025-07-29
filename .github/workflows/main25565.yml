@@ -5,45 +5,28 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:  # 添加这个以允许手动触发
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # 设置超时时间
 
     steps:
     - uses: actions/checkout@v4
     
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-    
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.16.9'  # 指定稳定版本
-        channel: 'stable'
-    
-    - name: Clean build
-      run: flutter clean
+        flutter-version: '3.x'  # 使用你的实际Flutter版本
     
     - name: Install dependencies
       run: flutter pub get
     
     - name: Build 32-bit APK
-      run: flutter build apk --release --target-platform android-arm --verbose
+      run: flutter build apk --release --target-platform android-arm
     
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload APK
+      uses: actions/upload-artifact@v4  # 关键修改点
       with:
-        name: kazumi-32bit-release
+        name: app-32bit-release
         path: build/app/outputs/flutter-apk/app-release.apk
-        retention-days: 5  # 自动清理旧构建
-    
-    - name: Show build info
-      run: |
-        echo "Build completed at $(date)"
-        ls -lh build/app/outputs/flutter-apk/
