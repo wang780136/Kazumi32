@@ -47,7 +47,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         
-        // 添加32位架构支持
+        // 仅保留ndk配置（移除splits配置）
         ndk {
             abiFilters 'armeabi-v7a' // 只构建32位
         }
@@ -55,21 +55,11 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
         }
     }
-
-    // 添加splits配置，可选（如果不需要分割APK可以删除）
-    splits {
-        abi {
-            enable true
-            reset()
-            include 'armeabi-v7a' // 只包含32位
-            universalApk false
-        }
-    }
+    
+    // 完全移除splits配置块以避免冲突
 }
 
 flutter {
@@ -78,7 +68,7 @@ flutter {
 
 dependencies {}
 
-// 修改后的ABI版本代码配置（针对F-droid）
+// 保留F-droid版本代码配置
 ext.abiCodes = ["armeabi-v7a": 1] // 只保留32位架构
 import com.android.build.OutputFile
 android.applicationVariants.all { variant ->
