@@ -25,8 +25,6 @@ if (flutterVersionName == null) {
 android {
     namespace "com.example.kazumi"
     compileSdk flutter.compileSdkVersion
-    // Pin ndk version to 21.3.6528147 to fix android build warning
-    // The build warning throws by gradle plugin, when the ndk is older than gradle plugin required version
     ndkVersion "27.2.12479018"
 
     compileOptions {
@@ -43,14 +41,16 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.predidit.kazumi"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        
+        // 添加32位架构支持
+        ndk {
+            abiFilters 'armeabi-v7a' // 只构建32位
+        }
     }
 
     buildTypes {
@@ -58,6 +58,16 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+        }
+    }
+
+    // 添加splits配置，可选（如果不需要分割APK可以删除）
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi-v7a' // 只包含32位
+            universalApk false
         }
     }
 }
@@ -68,13 +78,8 @@ flutter {
 
 dependencies {}
 
-// F-droid splits APKs by ABI, and requires different versionCode for each ABI.
-// For flutter version X.Y.Z, version code is X0Y0ZA, where A is the ABI code.
-// See:
-// * https://developer.android.com/build/gradle-tips
-// * https://developer.android.com/studio/build/configure-apk-splits
-// * https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/im.nfc.nfsee.yml
-ext.abiCodes = ["armeabi-v7a": 1, "arm64-v8a": 2, "x86_64": 4]
+// 修改后的ABI版本代码配置（针对F-droid）
+ext.abiCodes = ["armeabi-v7a": 1] // 只保留32位架构
 import com.android.build.OutputFile
 android.applicationVariants.all { variant ->
     variant.outputs.each { output ->
