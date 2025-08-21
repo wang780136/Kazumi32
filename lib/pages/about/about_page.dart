@@ -41,7 +41,12 @@ class _AboutPageState extends State<AboutPage> {
     _getCacheSize();
   }
 
-  void onBackPressed(BuildContext context) {}
+  void onBackPressed(BuildContext context) {
+    if (KazumiDialog.observer.hasKazumiDialog) {
+      KazumiDialog.dismiss();
+      return;
+    }
+  }
 
   Future<Directory> _getCacheDir() async {
     Directory tempDir = await getTemporaryDirectory();
@@ -258,7 +263,7 @@ class _AboutPageState extends State<AboutPage> {
                     ),
                     SettingsTile.navigation(
                       onPressed: (_) {
-                        myController.checkUpdata();
+                        myController.checkUpdate();
                       },
                       title: const Text('检查更新'),
                       value: const Text('当前版本 ${Api.version}'),

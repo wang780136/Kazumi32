@@ -32,6 +32,10 @@ class WebDav {
         setting.get(SettingBoxKey.webDavUsername, defaultValue: '');
     webDavPassword =
         setting.get(SettingBoxKey.webDavPassword, defaultValue: '');
+    if (webDavURL.isEmpty) {
+      //KazumiLogger().log(Level.warning, 'WebDAV URL is not set');
+      throw Exception('请先填写WebDAV URL');
+    }
     client = webdav.newClient(
       webDavURL,
       user: webDavUsername,
@@ -40,21 +44,30 @@ class WebDav {
     );
     client.setHeaders({'accept-charset': 'utf-8'});
     try {
-      // KazumiLogger().log(Level.warning, 'webDav backup directory not exists, creating');
-      await client.mkdir('/kazumiSync');
-      initialized = true;
-      KazumiLogger().log(Level.info, 'webDav backup directory create success');
-    } catch (_) {
-      KazumiLogger().log(Level.error, 'webDav backup directory create failed');
+      await client.ping();
+      try {
+        // KazumiLogger().log(Level.warning, 'webDav backup directory not exists, creating');
+        await client.mkdir('/kazumiSync');
+        initialized = true;
+        KazumiLogger().log(Level.info, 'webDav backup directory create success');
+      } catch (_) {
+        KazumiLogger().log(Level.error, 'webDav backup directory create failed');
+        rethrow;
+      }
+    } catch (e) {
+      KazumiLogger().log(Level.error, 'WebDAV ping failed: $e');
+      rethrow;
     }
   }
 
   Future<void> update(String boxName) async {
     var directory = await getApplicationSupportDirectory();
+    await File('${directory.path}/hive/$boxName.hive')
+          .copy('${directory.path}/hive/$boxName.hive.tmp');
     try {
       await client.remove('/kazumiSync/$boxName.tmp.cache');
     } catch (_) {}
-    await client.writeFromFile('${directory.path}/hive/$boxName.hive',
+    await client.writeFromFile('${directory.path}/hive/$boxName.hive.tmp',
         '/kazumiSync/$boxName.tmp.cache', onProgress: (c, t) {
       // print(c / t);
     });
@@ -65,10 +78,15 @@ class WebDav {
     }
     await client.rename(
         '/kazumiSync/$boxName.tmp.cache', '/kazumiSync/$boxName.tmp', true);
+    try {
+      await File('${directory.path}/hive/$boxName.hive.tmp').delete();
+    } catch (_) {}
   }
 
   Future<void> updateHistory() async {
     if (isHistorySyncing) {
+      KazumiLogger().log(Level.warning, 'History is currently syncing');
+      //throw Exception('History is currently syncing');
       return;
     }
     isHistorySyncing = true;
@@ -76,8 +94,10 @@ class WebDav {
       await update('histories');
     } catch (e) {
       KazumiLogger().log(Level.error, 'webDav update history failed $e');
+      rethrow;
+    } finally {
+      isHistorySyncing = false;
     }
-    isHistorySyncing = false;
   }
 
   Future<void> updateCollectibles() async {
@@ -92,7 +112,8 @@ class WebDav {
 
   Future<void> downloadAndPatchHistory() async {
     if (isHistorySyncing) {
-      return;
+      KazumiLogger().log(Level.warning, 'History is currently syncing');
+      throw Exception('History is currently syncing');
     }
     isHistorySyncing = true;
     String fileName = 'histories.tmp';
@@ -112,8 +133,10 @@ class WebDav {
     } catch (e) {
       KazumiLogger()
           .log(Level.error, 'webDav download and patch history failed $e');
+      rethrow;
+    } finally {
+      isHistorySyncing = false;
     }
-    isHistorySyncing = false;
   }
 
   Future<void> downloadCollectibles() async {
@@ -180,6 +203,11 @@ class WebDav {
   }
 
   Future<void> ping() async {
-    await client.ping();
+    try {
+      await client.ping();
+    } catch (e) {
+      KazumiLogger().log(Level.error, 'WebDAV ping failed: $e');
+      rethrow;
+    }
   }
 }

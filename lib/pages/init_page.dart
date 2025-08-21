@@ -67,10 +67,12 @@ class _InitPageState extends State<InitPage> {
           await webDav.downloadAndPatchHistory();
           KazumiLogger().log(Level.info, '同步观看记录完成');
         } catch (e) {
-          KazumiLogger().log(Level.error, '同步观看记录失败 ${e.toString()}');
+          KazumiDialog.showToast(message:"同步观看记录失败 ${e.toString()}");
+          //KazumiLogger().log(Level.error, '同步观看记录失败 ${e.toString()}');
         }
       } catch (e) {
-        KazumiLogger().log(Level.error, '初始化WebDav失败 ${e.toString()}');
+        KazumiDialog.showToast(message:"初始化WebDav失败 ${e.toString()}");
+        //KazumiLogger().log(Level.error, '初始化WebDav失败 ${e.toString()}');
       }
     }
   }
@@ -202,7 +204,7 @@ class _InitPageState extends State<InitPage> {
       bool autoUpdate =
           setting.get(SettingBoxKey.autoUpdate, defaultValue: true);
       if (autoUpdate) {
-        Modular.get<MyController>().checkUpdata(type: 'auto');
+        Modular.get<MyController>().checkUpdate(type: 'auto');
       }
     }
   }

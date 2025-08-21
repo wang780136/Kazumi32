@@ -722,7 +722,8 @@ class _PlayerItemPanelState extends State<PlayerItemPanel> {
                                     ),
                                     MenuItemButton(
                                       onPressed: () {
-                                        widget.showSyncPlayEndPointSwitchDialog();
+                                        widget
+                                            .showSyncPlayEndPointSwitchDialog();
                                       },
                                       child: const Padding(
                                         padding:
@@ -926,9 +927,18 @@ class _PlayerItemPanelState extends State<PlayerItemPanel> {
                                                 widget.keyboardFocus
                                                     .requestFocus();
                                                 showModalBottomSheet(
+                                                    backgroundColor: Theme.of(
+                                                            context)
+                                                        .colorScheme
+                                                        .surface,
                                                     isScrollControlled: true,
                                                     constraints: BoxConstraints(
-                                                        maxHeight: 280,
+                                                        maxHeight:
+                                                            MediaQuery.of(context)
+                                                                    .size
+                                                                    .height *
+                                                                3 /
+                                                                4,
                                                         maxWidth: (Utils
                                                                     .isDesktop() ||
                                                                 Utils
@@ -991,7 +1001,11 @@ class _PlayerItemPanelState extends State<PlayerItemPanel> {
                                       showModalBottomSheet(
                                           isScrollControlled: true,
                                           constraints: BoxConstraints(
-                                              maxHeight: 280,
+                                              maxHeight: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  3 /
+                                                  4,
                                               maxWidth: (Utils.isDesktop() ||
                                                       Utils.isTablet())
                                                   ? MediaQuery.of(context)
@@ -1162,32 +1176,30 @@ class _PlayerItemPanelState extends State<PlayerItemPanel> {
                                     tooltip: '视频比例',
                                   );
                                 },
-                                menuChildren: List<MenuItemButton>.generate(
-                                  3,
-                                  (int index) => MenuItemButton(
-                                    onPressed: () => playerController
-                                        .aspectRatioType = index + 1,
-                                    child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          0, 10, 10, 10),
-                                      child: Text(
-                                        index + 1 == 1
-                                            ? '自动'
-                                            : index + 1 == 2
-                                                ? '裁切填充'
-                                                : '拉伸填充',
-                                        style: TextStyle(
-                                            color: index + 1 ==
+                                menuChildren: [
+                                  for (final entry
+                                      in aspectRatioTypeMap.entries)
+                                    MenuItemButton(
+                                      onPressed: () => playerController
+                                          .aspectRatioType = entry.key,
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 10, 10, 10),
+                                        child: Text(
+                                          entry.value,
+                                          style: TextStyle(
+                                            color: entry.key ==
                                                     playerController
                                                         .aspectRatioType
                                                 ? Theme.of(context)
                                                     .colorScheme
                                                     .primary
-                                                : null),
+                                                : null,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
+                                ],
                               ),
                               (!videoPageController.isFullscreen &&
                                       !Utils.isTablet() &&

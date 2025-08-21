@@ -30,7 +30,12 @@ class _PlayerSettingsPageState extends State<WebDavSettingsPage> {
         setting.get(SettingBoxKey.enableGitProxy, defaultValue: false);
   }
 
-  void onBackPressed(BuildContext context) {}
+  void onBackPressed(BuildContext context) {
+    if (KazumiDialog.observer.hasKazumiDialog) {
+      KazumiDialog.dismiss();
+      return;
+    }
+  }
 
   Future<void> checkWebDav() async {
     var webDavURL =
@@ -60,8 +65,17 @@ class _PlayerSettingsPageState extends State<WebDavSettingsPage> {
     if (webDavEnable) {
       KazumiDialog.showToast(message: '尝试上传到WebDav');
       var webDav = WebDav();
-      await webDav.updateHistory();
-      KazumiDialog.showToast(message: '同步成功');
+      try {
+        await webDav.ping();
+        try {
+          await webDav.updateHistory();
+          KazumiDialog.showToast(message: '同步成功');
+        } catch (e) {
+          KazumiDialog.showToast(message: '同步失败 ${e.toString()}');
+        }
+      } catch (e) {
+        KazumiDialog.showToast(message: 'WebDAV连接失败');
+      }
     } else {
       KazumiDialog.showToast(message: '未开启WebDav同步或配置无效');
     }
@@ -71,13 +85,18 @@ class _PlayerSettingsPageState extends State<WebDavSettingsPage> {
     var webDavEnable =
         await setting.get(SettingBoxKey.webDavEnable, defaultValue: false);
     if (webDavEnable) {
+      KazumiDialog.showToast(message: '尝试从WebDav同步');
+      var webDav = WebDav();
       try {
-        KazumiDialog.showToast(message: '尝试从WebDav同步');
-        var webDav = WebDav();
-        await webDav.downloadAndPatchHistory();
-        KazumiDialog.showToast(message: '同步成功');
+        await webDav.ping();
+        try {
+          await webDav.downloadAndPatchHistory();
+          KazumiDialog.showToast(message: '同步成功');
+        } catch (e) {
+          KazumiDialog.showToast(message: '同步失败 ${e.toString()}');
+        }
       } catch (e) {
-        KazumiDialog.showToast(message: '同步失败 ${e.toString()}');
+        KazumiDialog.showToast(message: 'WebDAV连接失败');
       }
     } else {
       KazumiDialog.showToast(message: '未开启WebDav同步或配置无效');
@@ -122,15 +141,23 @@ class _PlayerSettingsPageState extends State<WebDavSettingsPage> {
                       onToggle: (value) async {
                         webDavEnable = value ?? !webDavEnable;
                         if (!WebDav().initialized && webDavEnable) {
-                          WebDav().init();
+                          try{
+                            await WebDav().init();
+                          } catch (e) {
+                            webDavEnable = false;
+                            KazumiDialog.showToast(message: 'WEBDAV初始化失败 $e');
+                          }  
                         }
                         if (!webDavEnable) {
                           webDavEnableHistory = false;
-                          await setting.put(SettingBoxKey.webDavEnableHistory, false);
+                          await setting.put(
+                              SettingBoxKey.webDavEnableHistory, false);
                         }
                         await setting.put(
                             SettingBoxKey.webDavEnable, webDavEnable);
-                        setState(() {});
+                        if (mounted) {
+                          setState(() {});
+                        }
                       },
                       title: const Text('WEBDAV同步'),
                       initialValue: webDavEnable,
